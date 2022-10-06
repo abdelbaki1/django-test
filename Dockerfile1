@@ -1,0 +1,21 @@
+#configuration of the containner
+
+FROM python:3.9
+#set the python to be directly sent to the terminer rather than buffred
+ENV PYTHONBUFFRED 1
+#set the workdirectory of the container
+WORKDIR /app
+#copy the requirement
+COPY requirement.txt /app/requirement.txt
+
+#install python packages in containner
+RUN pip install -r requirement.txt
+
+#Copy the project to the containner
+
+COPY . /app
+
+#start project inside containner
+EXPOSE 8000
+
+CMD python manage.py makemigrations
