@@ -17,8 +17,8 @@ class ProductGenericAPIView(RetrieveUpdateDestroyAPIView,ListCreateAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     pagination_class = CustomPagination
-    lookup_field = pk
-    lookup_url_kwarg =pk
+    lookup_field = id	
+    lookup_url_kwarg = pk
 
 class FileUploadView(UpdateAPIView):
     authentication_classes = [JWTAuthentication]

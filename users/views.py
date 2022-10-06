@@ -81,8 +81,8 @@ class RoleViewSet(RetrieveUpdateDestroyAPIView,CreateAPIView):
     permission_object = 'roles'
     serializer_class=RoleSerializer
     queryset=Role.objects.all()
-    lookup_field=pk
-    lookup_url_kwarg=pk
+    lookup_field = id	
+    lookup_url_kwarg = pk
 
 class UserGenericAPIView(RetrieveUpdateDestroyAPIView,CreateAPIView):
     authentication_classes = [JWTAuthentication]
@@ -91,15 +91,14 @@ class UserGenericAPIView(RetrieveUpdateDestroyAPIView,CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     pagination_class = CustomPagination
-    lookup_field=pk
-    lookup_url_kwarg=pk
+    lookup_field = id	
+    lookup_url_kwarg = pk
 
 class ProfileInfoAPIView(UpdateAPIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
-    lookup_field=pk
-    lookup_url_kwarg=pk
-
+    lookup_field = id	
+    lookup_url_kwarg = pk
 class ProfilePasswordAPIView(APIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
