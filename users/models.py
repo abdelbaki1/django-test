@@ -14,10 +14,10 @@ class User(AbstractUser):
     last_name = models.CharField(max_length=20)
     email = models.CharField(max_length=200, unique=True)
     password = models.CharField(max_length=200)
-    role = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True)
+    role = models.ForeignKey(Role,null=True, on_delete=models.SET_NULL)
     
     def __str__(self):
         return self.user
 class token(models.Model):
     user=models.ForeignKey(User, on_delete=models.CASCADE)
-    user_token=models.CharField(max_length=50)
+    user_token=models.CharField(max_length=200)

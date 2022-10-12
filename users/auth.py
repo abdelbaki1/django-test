@@ -4,6 +4,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from rest_framework import exceptions
 from rest_framework.authentication import BaseAuthentication
+from .models import token
 
 
 def generate_access_token(user):
@@ -22,6 +23,7 @@ def generate_access_token(user):
 class JWTAuthentication(BaseAuthentication):
 
     def authenticate(self, request):
+        token=None
         if 'jwt' in request.COOKIES:
             token = request.COOKIES.get('jwt')
         # else:
@@ -39,5 +41,5 @@ class JWTAuthentication(BaseAuthentication):
 
         if user is None:
             raise exceptions.AuthenticationFailed('User not found!')
-
+        # this will be contained in the request.user
         return (user, None)

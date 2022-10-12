@@ -31,18 +31,26 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'corsheaders',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'product','orders','users',
+    'products','orders','users',
     'rest_framework',
-    'corsheaders',
+    
 ]
 
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_CREDENTIALS = True
+CORS_ORIGIN_WHITELIST = (
+        'http://localhost:4200',
+        
+    )
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -133,3 +141,6 @@ AUTH_USER_MODEL = 'users.User'
 
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# allow comms between two diffrent domain
+

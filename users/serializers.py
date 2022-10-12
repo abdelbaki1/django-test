@@ -42,11 +42,12 @@ class RoleRelatedField(serializers.RelatedField):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    role = RoleRelatedField(many=False, queryset=Role.objects.all())
+    # add required=false to allow setting it null in the input
+    role = RoleRelatedField(many=False,required=False, queryset=Role.objects.all())
 
     class Meta:
         model = User
-        fields = ['id', 'first_name', 'last_name', 'email', 'password', 'role']
+        fields = ['id', 'first_name', 'last_name', 'email', 'password','role']
         extra_kwargs = {
             #prevent password from been sent back
             'password': {'write_only': True}

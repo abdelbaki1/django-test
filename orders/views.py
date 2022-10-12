@@ -7,28 +7,27 @@ from rest_framework import generics, mixins
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.generics import RetrieveAPIView
-from admin.pagination import CustomPagination
+from rest_framework.generics import RetrieveAPIView,ListAPIView,GenericAPIView
+from testproject.pagination import CustomPagination
 from orders.models import Order, OrderItem
 from orders.serializers import OrderSerializer
-from users.authentication import JWTAuthentication
+from users.auth import JWTAuthentication
 
-
-class OrderGenericAPIView(
-    generics.GenericAPIView, mixins.ListModelMixin, RetrieveAPIView
-):
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
+class OrderGenericAPIView(GenericAPIView):
+    # authentication_classes = [JWTAuthentication]
+    # permission_classes = [IsAuthenticated]
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
-    pagination_class = CustomPagination
-    lookup_field = id	
-    lookup_url_kwarg = pk
-
+    
+class GetAllOrder(OrderGenericAPIView,ListAPIView):
+   pagination_class = CustomPagination
+class GetanOrder(OrderGenericAPIView,RetrieveAPIView):
+    lookup_field = "id"	
+    lookup_url_kwarg ="pk"
 
 class ExportAPIView(APIView):
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    # authentication_classes = [JWTAuthentication]
+    # permission_classes = [IsAuthenticated]
 
     def get(self, request):
         response = HttpResponse(content_type='text/csv')
@@ -46,12 +45,12 @@ class ExportAPIView(APIView):
             for item in orderItems:
                 writer.writerow(['', '', '', item.product_title, item.price, item.quantity])
 
-        return response
+                return response
 
 
 class ChartAPIView(APIView):
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    # authentication_classes = [JWTAuthentication]
+    # permission_classes = [IsAuthenticated]
 
     def get(self, _):
         with connection.cursor() as cursor:

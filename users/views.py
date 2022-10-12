@@ -2,19 +2,19 @@ from rest_framework import exceptions,status
 from rest_framework.decorators import api_view
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.generics import UpdateAPIView,CreateAPIView,RetrieveUpdateDestroyAPIView
-
-from admin.pagination import CustomPagination
-from .authentication import generate_access_token, JWTAuthentication
+from rest_framework.generics import RetrieveAPIView, GenericAPIView, UpdateAPIView,CreateAPIView,DestroyAPIView,RetrieveUpdateDestroyAPIView,ListAPIView
+from rest_framework.views import APIView
+from testproject.pagination import CustomPagination
+from .auth import generate_access_token, JWTAuthentication
 from .models import User, Permission, Role
-from .permissions import ViewPermissions
+from .permission import ViewPermissions
 from .serializers import UserSerializer, PermissionSerializer, RoleSerializer
 
 
 @api_view(['POST'])
 def register(request):
     data = request.data
-
+    print(data)
     if data['password'] != data['password_confirm']:
         raise exceptions.APIException('Passwords do not match!')
 
@@ -40,7 +40,7 @@ def login(request):
     response = Response()
 
     token = generate_access_token(user)
-    response.set_cookie(key='jwt', value=token, httponly=True)
+    response.set_cookie(key='jwt', value=token, httponly=True,samesite='none',secure=True)
     response.data = {
         'jwt': token
     }
@@ -68,44 +68,56 @@ class AuthenticatedUser(APIView):
             'data': data
         })
 
-class PermissionAPIView(APIView):
+class PermissionAPIView(ListAPIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
     #changed
+    queryset = Permission.objects.all()
     serializer_class=PermissionSerializer
-
-
-class RoleViewSet(RetrieveUpdateDestroyAPIView,CreateAPIView):
+    
+class genericroleview(GenericAPIView):
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated & ViewPermissions]
-    permission_object = 'roles'
+    
     serializer_class=RoleSerializer
     queryset=Role.objects.all()
-    lookup_field = id	
-    lookup_url_kwarg = pk
+class listroleview(genericroleview,ListAPIView):
+    pagination_class = CustomPagination
+class RoleViewSet(genericroleview,RetrieveUpdateDestroyAPIView,CreateAPIView):
+    permission_classes = [IsAuthenticated]
+    permission_object = 'roles'
+    lookup_field = "id"	
+    lookup_url_kwarg = "pk"
 
-class UserGenericAPIView(RetrieveUpdateDestroyAPIView,CreateAPIView):
+class UserGenericAPIView(GenericAPIView):
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated & ViewPermissions]
-    permission_object = 'users'
     queryset = User.objects.all()
     serializer_class = UserSerializer
+
+
+class UserlistAPI(UserGenericAPIView):
     pagination_class = CustomPagination
-    lookup_field = id	
-    lookup_url_kwarg = pk
+class UserAPIView(UserGenericAPIView,RetrieveAPIView,
+                        UpdateAPIView,
+                        DestroyAPIView,
+                        CreateAPIView):
+    permission_classes = [IsAuthenticated]
+    permission_object = 'users'
+    lookup_field = "id"	
+    lookup_url_kwarg = 'pk'
 
 class ProfileInfoAPIView(UpdateAPIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
-    lookup_field = id	
-    lookup_url_kwarg = pk
+    queryset = User.objects.all()
+    lookup_field = "id"	
+    lookup_url_kwarg = "pk"
+
 class ProfilePasswordAPIView(APIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def put(self, request, pk=None):
         user = request.user
-
         if request.data['password'] != request.data['password_confirm']:
             raise exceptions.ValidationError('Passwords do not match')
 
