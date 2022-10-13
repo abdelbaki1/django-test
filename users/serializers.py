@@ -58,7 +58,7 @@ class UserSerializer(serializers.ModelSerializer):
         password = validated_data.pop('password', None)
         
         roles=Role.objects.get(id=validated_data.get('role_id'))
-        instance = self.Meta.model(**validated_data,role=roles)
+        instance = self.Meta.model(**validated_data,role=roles,username=validated_data.get('last_name')+validated_data.get('first_name'))
         print(instance.role,"********************")
         if password is not None:
             instance.set_password(password)
