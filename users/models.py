@@ -16,6 +16,7 @@ class User(AbstractUser):
     password = models.CharField(max_length=200)
     role = models.ForeignKey(Role,null=True, on_delete=models.SET_NULL)
     
+    REQUIRED_FIELDS=['first_name','last_name','email']
     def __str__(self):
         return self.email
 class token(models.Model):

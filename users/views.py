@@ -64,7 +64,10 @@ class AuthenticatedUser(APIView):
 
     def get(self, request):
         data = UserSerializer(request.user).data
-        data['permissions'] = [p['name'] for p in data['role']['permissions']]
+        print(data)
+        if data['role']:
+            data['permissions'] = [p['name'] for p in data['role']['permissions']]
+        
         return Response(
              data
         )
