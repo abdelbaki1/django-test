@@ -58,17 +58,21 @@ def logout(_):
 
 
 class AuthenticatedUser(APIView):
+    '''return the current user along with it's permission'''
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         data = UserSerializer(request.user).data
         data['permissions'] = [p['name'] for p in data['role']['permissions']]
-        return Response({
-            'data': data
-        })
+        return Response(
+             data
+        )
 
 class PermissionAPIView(ListAPIView):
+    '''
+    return all the permission in a list
+    '''
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
     #changed
@@ -76,13 +80,19 @@ class PermissionAPIView(ListAPIView):
     serializer_class=PermissionSerializer
     
 class genericroleview(GenericAPIView):
+    '''
+    generic api config for the role model
+    '''
     authentication_classes = [JWTAuthentication]
-    
     serializer_class=RoleSerializer
     queryset=Role.objects.all()
 class listroleview(genericroleview,ListAPIView):
+    '''
+    return list of role
+    '''
     pagination_class = CustomPagination
 class RoleViewSet(genericroleview,RetrieveUpdateDestroyAPIView,CreateAPIView):
+    '''return a role,create,update,create'''
     permission_classes = [IsAuthenticated]
     permission_object = 'roles'
     lookup_field = "id"	
@@ -94,25 +104,64 @@ class UserGenericAPIView(GenericAPIView):
     serializer_class = UserSerializer
 
 
-class UserlistAPI(UserGenericAPIView):
+class UserlistAPI(UserGenericAPIView,ListAPIView):
+    '''
+    return a list of all users
+    '''
     pagination_class = CustomPagination
 class UserAPIView(UserGenericAPIView,RetrieveAPIView,
                         UpdateAPIView,
                         DestroyAPIView,
                         CreateAPIView):
+    '''retrieve ,update,delete create a user'''
     permission_classes = [IsAuthenticated]
     permission_object = 'users'
     lookup_field = "id"	
     lookup_url_kwarg = 'pk'
+    def perform_create(self,serializer):
+        serializer.save(role_id=self.request.data.get('role_id'))
+        
+    def update(self, request, *args, **kwargs):
+        # print("update has been hit***********************************")
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        user=User.objects.get(id=instance.id)
+        user.email=request.data.get('email')
+        user.first_name=request.data.get('first_name')
+        user.last_name=request.data.get('last_name')
+        roles=Role.objects.get(id=request.data.get('role_id'))
+        user.role=roles
+        user.save()
+        
+        return Response(UserSerializer(user).data)
 
 class ProfileInfoAPIView(UpdateAPIView):
+    '''
+    updateuserinfo
+    '''
+    serializer_class = UserSerializer
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
     queryset = User.objects.all()
-    lookup_field = "id"	
-    lookup_url_kwarg = "pk"
+    def get_object(self):
+        return self.request.user
+    def update(self, request, *args, **kwargs):
+        print("update has been hit")
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        user=User.objects.get(id=instance.id)
+        user.email=request.data.get('email')
+        user.first_name=request.data.get('first_name')
+        user.last_name=request.data.get('last_name')
+        user.save(update_fields=request.data.keys())
+        
+        return Response(UserSerializer(user).data)
 
 class ProfilePasswordAPIView(APIView):
+    '''
+
+    update the password
+    '''
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 

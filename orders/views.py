@@ -31,26 +31,33 @@ class ExportAPIView(APIView):
 
     def get(self, request):
         response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename=orders.csv'
+        response['Content-Disposition'] = 'attachment; filename="order.csv"'
+        
 
         orders = Order.objects.all()
         writer = csv.writer(response)
 
-        writer.writerow(['ID', 'Name', 'Email', 'Product Title', 'Price', 'Quantity'])
+        writer.writerow(['ID', 'Name', 'Email', 'Product Title', 'Price', 'Quantity','\n' ])
+
 
         for order in orders:
-            writer.writerow([order.id, order.name, order.email, '', '', ''])
+            print("order",order)
+            
+            writer.writerow([order.id, order.name, order.email, '\n'])
             orderItems = OrderItem.objects.all().filter(order_id=order.id)
 
-            for item in orderItems:
-                writer.writerow(['', '', '', item.product_title, item.price, item.quantity])
+            print(orderItems)
 
-                return response
+            for item in orderItems:
+                print("items",item)
+                writer.writerow(["    ", item.product_title, item.price, item.quantity,'\n'])
+        
+        return response
 
 
 class ChartAPIView(APIView):
-    # authentication_classes = [JWTAuthentication]
-    # permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def get(self, _):
         with connection.cursor() as cursor:
@@ -60,6 +67,8 @@ class ChartAPIView(APIView):
             JOIN orders_orderitem as i ON o.id = i.order_id
             GROUP BY date
             """)
+
+
             row = cursor.fetchall()
 
         data = [{

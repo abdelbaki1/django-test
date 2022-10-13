@@ -33,16 +33,17 @@ class productapi(GenericProductView,
                 UpdateModelMixin,
                 RetrieveModelMixin,
                 DestroyModelMixin):
+    lookup_field = "id"	
+    lookup_url_kwarg = "pk"
     def get(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
-    def post(self, request):
-        return self.create(request, *args, **kwargs)
-    def put(self, request, pk=None):
+    def post(self, request, *args, **kwargs):
+        return self.create(request,*args, **kwargs)
+    def put(self, request, *args, **kwargs):
         return self.partial_update(request, *args, **kwargs)
-    def delete(self, request, pk=None):
+    def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
-    lookup_field = "id"	
-    lookup_url_kwarg = 'pk'
+    
 
 class FileUploadView(UpdateAPIView):
     authentication_classes = [JWTAuthentication]
