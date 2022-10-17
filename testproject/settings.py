@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,14 +21,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-px@3ubz4ksvupcxqq0u8lg05tpzbno5k$)@nb$x5df4+$w^elp'
+SECRET_KEY = os.environ.get('SECRET_KEY',None)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = []
 
-
+REST_FRAMEWORK = {
+  
+  'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema'
+}
 # Application definition
 
 INSTALLED_APPS = [
@@ -40,6 +44,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'products','orders','users',
     'rest_framework',
+     'rest_framework_swagger',
     
 ]
 
@@ -74,6 +79,9 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
+            'libraries' : {
+                'staticfiles': 'django.templatetags.static', 
+            }
         },
     },
 ]
@@ -86,12 +94,12 @@ WSGI_APPLICATION = 'testproject.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-         'NAME':'baki',
-        'USER': 'root',
-        'PASSWORD': 'root',
-        'HOST': 'sql_containner',
-        'PORT': '3306',
+        'ENGINE': os.environ.get('db_engine',''),
+         'NAME':os.environ.get('db_name',''),
+        'USER': os.environ.get('db_user',''),
+        'PASSWORD': os.environ.get('db_password',''),
+        'HOST': os.environ.get('db_host',''),
+        'PORT': os.environ.get('db_port',''),
         'OPTIONS': {'charset': 'utf8mb4'},
     }
 }
@@ -141,7 +149,12 @@ STATIC_ROOT='/staticfolder/'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 AUTH_USER_MODEL = 'users.User'
 
-
+SWAGGER_SETTINGS = {
+   
+    'JSON_EDITOR':True,
+    'SHOW_REQUEST_HEADERS':True
+    
+}
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # allow comms between two diffrent domain
