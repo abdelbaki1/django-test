@@ -1,5 +1,4 @@
 from rest_framework import serializers
-
 from .models import User, Permission, Role
 
 
@@ -43,25 +42,27 @@ class RoleRelatedField(serializers.RelatedField):
 
 class UserSerializer(serializers.ModelSerializer):
     # add required=false to allow setting it null in the input
-    role = RoleRelatedField(many=False,required=False, queryset=Role.objects.all())
+    role = RoleRelatedField(many=False, required=False, queryset=Role.objects.all())
 
     class Meta:
         model = User
-        fields = ['id', 'first_name', 'last_name', 'email', 'password','role']
+        fields = ['id', 'first_name', 'last_name', 'email', 'password', 'role']
         extra_kwargs = {
-            #prevent password from been sent back
+            # prevent password from been sent back
             'password': {'write_only': True}
         }
 
     def create(self, validated_data):
         print(validated_data)
         password = validated_data.pop('password', None)
-        
-        roles=Role.objects.get(id=validated_data.get('role_id'))
-        instance = self.Meta.model(**validated_data,role=roles,username=validated_data.get('last_name')+validated_data.get('first_name'))
-        print(instance.role,"********************")
+
+        roles = Role.objects.get(id=validated_data.get('role_id'))
+        instance = self.Meta.model(
+            **validated_data, role=roles,
+            username=validated_data.get('last_name') + validated_data.get('first_name')
+        )
+        print(instance.role, "********************")
         if password is not None:
             instance.set_password(password)
         instance.save()
         return instance
-    

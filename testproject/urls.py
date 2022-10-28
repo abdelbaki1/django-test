@@ -15,7 +15,8 @@ Including another URLconf
 """
 from django.contrib import admin
 
-from django.urls import path,include
+from django.urls import path
+from django.urls import include
 from django.conf.urls.static import static
 from django.conf import settings
 from rest_framework_swagger.views import get_swagger_view
@@ -25,10 +26,7 @@ schema_view = get_swagger_view(title='docs for tests')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/users/',include('users.urls')),
-    path('api/products/',include('products.urls')),
-    path('api/orders/',include('orders.urls')),
-    path('docs',schema_view)
-   
-
-] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    path('api/users/', include('users.urls')),
+    path('api/products/', include('products.urls')),
+    path('api/orders/', include('orders.urls')),
+    path('docs', schema_view)] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

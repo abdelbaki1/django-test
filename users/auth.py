@@ -13,8 +13,8 @@ def generate_access_token(user):
         'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=60),
         'iat': datetime.datetime.utcnow()
     }
-    encoded_jwt=jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
-    token_object=token(user=user,user_token=encoded_jwt)
+    encoded_jwt = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
+    token_object = token(user=user, user_token=encoded_jwt)
     token_object.save()
 
     return encoded_jwt.decode('utf-8')
@@ -23,7 +23,7 @@ def generate_access_token(user):
 class JWTAuthentication(BaseAuthentication):
 
     def authenticate(self, request):
-        token=None
+        token = None
         if 'jwt' in request.COOKIES:
             token = request.COOKIES.get('jwt')
         # else:

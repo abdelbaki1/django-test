@@ -1,39 +1,23 @@
 #configuration of the containner
 
-FROM python:3.9
+FROM python:3.7
 #set the python to be directly sent to the terminer rather than buffred
 ENV PYTHONBUFFRED 1
-# ENV PIPENV_VENV_IN_PROJECT 1 
+# ENV PIPENV_VENV_IN_PROJECT 1
 #set the workdirectory of the containerµ
 WORKDIR /app
-
-RUN ls
-
-#copy the requirement
-COPY requirement.txt /app/requirement.txt
-#install python packages in containner
-RUN pip install pipenv
 # RUN pipenv --rm
-# RUN pipenv --venv
-
-RUN pipenv install -r /app/requirement.txt 
-
-#Copy the project to the containner
-# RUN pipenv shell
-
 COPY . /app
 
-RUN ls
-# RUN cd /app
-RUN ls
-RUN cat Pipfile
+RUN pip install pipenv
 
-
+#Copy the project to the containner
+RUN pipenv install
 
 #start project inside containner
 EXPOSE 8000
-ENTRYPOINT ["pipenv","run","python","manage.py","runserver"]
 
+ENTRYPOINT ["pipenv","run","python","manage.py","runserver"]
 
 CMD ["0.0.0.0:8000"]
     

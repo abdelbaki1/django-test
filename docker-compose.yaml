@@ -5,16 +5,17 @@ services :
   sql_containner:
    image: mysql:5.7.22
    restart : always
+  
    environment :
-      - MYSQL_DATABASE='test_database'
-      - MYSQL_USER='root'
-      - MYSQL_PASSWORD='root'
-      - MYSQL_ROOT_PASSWORD='root'
+      - MYSQL_DATABASE='${db_name}'
+      - MYSQL_USER='${db_user}'
+      - MYSQL_PASSWORD='${db_password}'
+      - MYSQL_ROOT_PASSWORD='${db_password}'
    volumes:
-       
      - .dbdata:/var/lib/mysql
+     
    ports:
-    - "3305:3306"
+    - "3305:${db_port}"
     
 
 
@@ -26,9 +27,8 @@ services :
      dockerfile: Dockerfile1
     
      
-     
    ports:
-    - "8000:8000"
+    - "${port_django_docker}:${port_django_docker}"
    volumes:
     #speciffing the location of files for docker
      - .:/app

@@ -21,19 +21,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('SECRET_KEY',None)
+SECRET_KEY = os.environ.get('SECRET_KEY', None)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
 ALLOWED_HOSTS = []
-
 REST_FRAMEWORK = {
-  
-  'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema'
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema'
+
 }
 # Application definition
-
 INSTALLED_APPS = [
     'corsheaders',
     'django.contrib.admin',
@@ -42,18 +39,18 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'products','orders','users',
+    'products',
+    'orders',
+    'users',
     'rest_framework',
-     'rest_framework_swagger',
-    
+    'rest_framework_swagger',
 ]
-
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = True
 CORS_ORIGIN_WHITELIST = (
-        'http://localhost:4200',
-        
-    )
+    'http://localhost:4200',
+
+)
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
@@ -79,8 +76,8 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
-            'libraries' : {
-                'staticfiles': 'django.templatetags.static', 
+            'libraries': {
+                'staticfiles': 'django.templatetags.static',
             }
         },
     },
@@ -94,13 +91,14 @@ WSGI_APPLICATION = 'testproject.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': os.environ.get('db_engine',''),
-         'NAME':os.environ.get('db_name',''),
-        'USER': os.environ.get('db_user',''),
-        'PASSWORD': os.environ.get('db_password',''),
-        'HOST': os.environ.get('db_host',''),
-        'PORT': os.environ.get('db_port',''),
+        'ENGINE': os.environ.get('db_engine', ''),
+        'NAME': os.environ.get('db_name', ''),
+        'USER': os.environ.get('db_user', ''),
+        'PASSWORD': os.environ.get('db_password', ''),
+        'HOST': os.environ.get('db_host', ''),
+        'PORT': os.environ.get('db_port', ''),
         'OPTIONS': {'charset': 'utf8mb4'},
+
     }
 }
 
@@ -140,22 +138,20 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
-MEDIA_URL='/media/'
-MEDIA_ROOT='/mediafolder/'
+MEDIA_URL = '/media/'
+MEDIA_ROOT = '/mediafolder/'
 STATIC_URL = '/static/'
-STATIC_ROOT='/staticfolder/'
+STATIC_ROOT = '/staticfolder/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 AUTH_USER_MODEL = 'users.User'
 
 SWAGGER_SETTINGS = {
-   
-    'JSON_EDITOR':True,
-    'SHOW_REQUEST_HEADERS':True
-    
+
+    'JSON_EDITOR': True,
+    'SHOW_REQUEST_HEADERS': True
+
 }
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
 # allow comms between two diffrent domain
-
