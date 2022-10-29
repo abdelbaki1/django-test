@@ -56,7 +56,7 @@ class UserSerializer(serializers.ModelSerializer):
         print(validated_data)
         password = validated_data.pop('password', None)
 
-        roles = Role.objects.get(id=validated_data.get('role_id'))
+        roles = Role.objects.get(id=validated_data.get('role_id', 3))
         instance = self.Meta.model(
             **validated_data, role=roles,
             username=validated_data.get('last_name') + validated_data.get('first_name')
