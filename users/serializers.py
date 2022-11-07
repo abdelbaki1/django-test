@@ -46,7 +46,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'first_name', 'last_name', 'email', 'password', 'role']
+        fields = ['id', 'first_name', 'last_name', 'email', 'password', 'role', 'user_image']
         extra_kwargs = {
             # prevent password from been sent back
             'password': {'write_only': True}
@@ -66,3 +66,11 @@ class UserSerializer(serializers.ModelSerializer):
             instance.set_password(password)
         instance.save()
         return instance
+
+    # def to_representation(self, instance):
+    #     """Convert `username` to lowercase."""
+    #     server_url="http://localhost:8000"
+    #     ret = super().to_representation(instance)
+    #     if(ret.get('user_image')):
+    #         ret['user_image'] = str(server_url + ret['user_image'])
+    #     return ret

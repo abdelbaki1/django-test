@@ -18,7 +18,9 @@ class User(AbstractUser):
     email = models.CharField(max_length=200, unique=True)
     password = models.CharField(max_length=200)
     role = models.ForeignKey(Role, null=True, on_delete=models.SET_NULL)
-    REQUIRED_FIELDS = ['first_name', 'last_name', 'email']
+    
+    user_image=models.CharField(max_length=250, null=True)
+    REQUIRED_FIELDS = ['first_name', 'last_name', 'email','user_image']
 
     def __str__(self):
         return self.email

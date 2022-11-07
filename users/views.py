@@ -160,6 +160,7 @@ class ProfileInfoAPIView(UpdateAPIView):
         user.email = request.data.get('email')
         user.first_name = request.data.get('first_name')
         user.last_name = request.data.get('last_name')
+        user.user_image=request.data.get('user_image')
         user.save(update_fields=request.data.keys())
         return Response(UserSerializer(user).data)
 
