@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, Permission, Role
+from .models import User, Permission, Role ,User_activity
 
 
 class PermissionSerializer(serializers.ModelSerializer):
@@ -74,3 +74,14 @@ class UserSerializer(serializers.ModelSerializer):
     #     if(ret.get('user_image')):
     #         ret['user_image'] = str(server_url + ret['user_image'])
     #     return ret
+class User_activity_serializer(serializers.ModelSerializer):
+    class Meta:
+        model = User_activity
+        fields = '__all__'
+    
+    def to_representation(self,instance):
+        obj=super().to_representation(instance)
+        obj['user']=instance.user.email
+        obj['date']=instance.date.ctime()
+        return obj
+

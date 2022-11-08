@@ -1,8 +1,8 @@
 from django.urls import path
 from .views import (
     register, login, logout, AuthenticatedUser, PermissionAPIView, RoleViewSet,
-    #  UserGenericAPIView,
-    ProfileInfoAPIView, ProfilePasswordAPIView, listroleview, UserAPIView, UserlistAPI
+    ProfileInfoAPIView, ProfilePasswordAPIView, listroleview, UserAPIView, UserlistAPI,
+    UserActivityView
 )
 
 urlpatterns = [
@@ -18,5 +18,6 @@ urlpatterns = [
     path('permissions', PermissionAPIView.as_view()),
     path('roles', listroleview.as_view()),
     path('roles/create', RoleViewSet.as_view()),
-    path('roles/<str:pk>', RoleViewSet.as_view())]
+    path('roles/<str:pk>', RoleViewSet.as_view()),
+    path('log',UserActivityView.as_view())]
 # path('users', UserGenericAPIView.as_view()),

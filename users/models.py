@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-
+from django.utils import timezone
 
 class Permission(models.Model):
     name = models.CharField(max_length=200)
@@ -29,3 +29,17 @@ class User(AbstractUser):
 class token(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     user_token = models.CharField(max_length=200)
+    
+    def __str__(self):
+        return self.user_token
+    
+
+class User_activity(models.Model):
+    
+    user=models.ForeignKey(User, on_delete=models.CASCADE)
+    date=models.DateTimeField(default=timezone.now,editable=False)
+    activity=models.CharField(null=True, max_length=50,blank=True)
+    
+    def __str__(self):
+        return str(self.date) + str(self.user)
+    

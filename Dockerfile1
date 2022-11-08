@@ -17,7 +17,7 @@ RUN pipenv install
 #start project inside containner
 EXPOSE 8000
 
-ENTRYPOINT ["pipenv","run","python","manage.py","runserver"]
+ENTRYPOINT ["pipenv","run","python","-u","manage.py","runserver"]
 
 CMD ["0.0.0.0:8000"]
     

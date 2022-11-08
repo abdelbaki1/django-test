@@ -11,6 +11,7 @@ from rest_framework.mixins import CreateModelMixin
 from rest_framework.mixins import RetrieveModelMixin
 from rest_framework.mixins import UpdateModelMixin
 from rest_framework.mixins import DestroyModelMixin
+from users.Signals import user_activity_signal
 
 
 class GenericProductView(GenericAPIView):
@@ -43,10 +44,13 @@ class productapi(GenericProductView,
         return self.retrieve(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
+        user_activity_signal.send(sender=self.request.user,activity='have created a product')
         return self.create(request, *args, **kwargs)
 
     def put(self, request, *args, **kwargs):
+        user_activity_signal.send(sender=self.request.user,activity='have updated a product')
         return self.partial_update(request, *args, **kwargs)
 
     def delete(self, request, *args, **kwargs):
+        user_activity_signal.send(sender=self.request.user,activity='have deleted a product')
         return self.destroy(request, *args, **kwargs)
