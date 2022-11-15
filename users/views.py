@@ -7,11 +7,11 @@ from rest_framework.generics import DestroyAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.views import APIView
 from testproject.pagination import CustomPagination
 from .auth import generate_access_token, JWTAuthentication
-from .models import User, Permission, Role, User_activity, token
+from .models import User, Permission, Role, token, User_activity
 from .Signals import user_activity_signal
 from .auth import JWTAuthentication
 from django.contrib.auth.models import Group,Permission
-from .serializers import UserSerializer, PermissionSerializer, RoleSerializer, User_activity_serializer
+from .serializers import UserSerializer, PermissionSerializer, RoleSerializer,User_activity_serializer
 
 def get_permission(model_name,perm):
     codename :str = perm+'_'+model_name
@@ -78,7 +78,7 @@ def login(request):
         raise exceptions.AuthenticationFailed('Incorrect Password!')
     response = Response()
     user.user_permissions.set(user.groups.all()[0].permissions.all())
-    # print(user,user.user_permissions.all(),user.groups.get(name='patient').permissions.all())
+    # print(user,user.groups.get(name='patient').permissions.all())
     token = generate_access_token(user)
     res=user_activity_signal.send(sender=user, activity='have logged in !!')
     response.set_cookie(key='jwt', value=token, httponly=True, samesite='none', secure=True)

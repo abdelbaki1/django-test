@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Permission, Role, User, User_activity, token
+from .models import Permission, Role, User, token, User_activity
 from django.contrib.contenttypes.models import ContentType as CT
 from django.contrib.auth.models import Permission
 

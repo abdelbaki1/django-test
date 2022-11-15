@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
+# from django.contrib.models import Permission
 
 class Permission(models.Model):
     name = models.CharField(max_length=200)

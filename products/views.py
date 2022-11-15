@@ -74,5 +74,6 @@ class productapi(GenericProductView,
         return self.partial_update(request, *args, **kwargs)
 
     def delete(self, request, *args, **kwargs):
+        print(request.user.user_permissions.all())
         user_activity_signal.send(sender=self.request.user,activity='have deleted a product')
         return self.destroy(request, *args, **kwargs)
