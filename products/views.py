@@ -11,17 +11,34 @@ from rest_framework.mixins import CreateModelMixin
 from rest_framework.mixins import RetrieveModelMixin
 from rest_framework.mixins import UpdateModelMixin
 from rest_framework.mixins import DestroyModelMixin
+from django.core.exceptions import PermissionDenied
 from users.Signals import user_activity_signal
+from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.contrib.auth.models import Permission
 
 
-class GenericProductView(GenericAPIView):
+
+class GenericProductView(GenericAPIView,PermissionRequiredMixin):
     authentication_classes = [JWTAuthentication]
     # permission_classes = [IsAuthenticated]
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
 
+    def has_permission(self):
+        return all(
+            self.request.user.user_permissions.filter(codename=i).exists() for i in self.get_permission_required()
+            )
+    def get_object(self):
+        if(self.has_permission()):
+            print("user has permission")
+            return super().get_object()
+        else:
+            print("no permission granted")
+            raise PermissionDenied("good luck next time")
+
 
 class getallproduct(GenericProductView, ListModelMixin):
+    permission_required = ('view_product')
     pagination_class = CustomPagination
     permission_classes = [IsAuthenticated]
 
@@ -35,7 +52,9 @@ class productapi(GenericProductView,
                  CreateModelMixin,
                  UpdateModelMixin,
                  RetrieveModelMixin,
-                 DestroyModelMixin):
+                 DestroyModelMixin,
+                ):
+    permission_required = ('view_product','add_product','delete_product')
     permission_classes = [IsAuthenticated]
     lookup_field = "id"
     lookup_url_kwarg = "pk"
@@ -44,8 +63,11 @@ class productapi(GenericProductView,
         return self.retrieve(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
-        user_activity_signal.send(sender=self.request.user,activity='have created a product')
-        return self.create(request, *args, **kwargs)
+        if(self.has_permission()):
+            user_activity_signal.send(sender=self.request.user,activity='have created a product')
+            return self.create(request, *args, **kwargs)
+        else:
+            raise PermissionDenied
 
     def put(self, request, *args, **kwargs):
         user_activity_signal.send(sender=self.request.user,activity='have updated a product')

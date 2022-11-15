@@ -10,25 +10,65 @@ from .auth import generate_access_token, JWTAuthentication
 from .models import User, Permission, Role, User_activity, token
 from .Signals import user_activity_signal
 from .auth import JWTAuthentication
-# from .permission import ViewPermissions
+from django.contrib.auth.models import Group,Permission
 from .serializers import UserSerializer, PermissionSerializer, RoleSerializer, User_activity_serializer
 
+def get_permission(model_name,perm):
+    codename :str = perm+'_'+model_name
+    # print("6555555550",codename.lower())
+    return Permission.objects.get(codename=codename.lower())
+
+def __get_group(name_group:str,perms:dict):
+    admin_group,Created=Group.objects.get_or_create(name='Admin')
+    if Created:
+        admin_group.permissions.set(Permission.objects.all())
+    group_obj,created=Group.objects.get_or_create(name=name_group)
+    if created:
+        for app_name,app_models in perms.items():
+            for model_name,permissions in app_models.items():
+                for permission in permissions:
+                    # print(app_name, model_name, permission)
+                    group_obj.permissions.add(get_permission(model_name, permission))
+    group_obj.save()
+    return group_obj
 
 @api_view(['POST'])
 def register(request):
+    patient_permission_dict={
+            'products':
+                {'Product':['change','add','view','delete']},
+            'orders':
+                {'OrderItem':['change','add','view','delete']},
+        }
+    docter_permission_dict = {
+            'products':
+                {'Product':['view']},
+            'orders':
+                {'OrderItem':['view']},
+        }
     data = request.data
-    print(data)
     if data['password'] != data['password_confirm']:
         raise exceptions.APIException('Passwords do not match!')
 
     serializer = UserSerializer(data=data)
     serializer.is_valid(raise_exception=True)
-    user_activity_signal.send(sender=serializer.save(),activity=' just registered')
+    group_name :str = request.data.get('group_name')
+    if group_name.lower() =='patient':
+        group=__get_group(group_name,patient_permission_dict)
+    if group_name.lower() =='doctor':
+        group=__get_group(group_name,docter_permission_dict)
+
+    user_instance=serializer.save()
+    user_instance.groups.add(group)
+    user_activity_signal.send(sender=user_instance,activity=' just registered')
+    user_instance.save()
+    print(user_instance.groups)
     return Response(serializer.data)
 
 
 @api_view(['POST'])
 def login(request):
+
     email = request.data.get('email')
     password = request.data.get('password')
     user = User.objects.filter(email=email).first()
@@ -37,12 +77,14 @@ def login(request):
     if not user.check_password(password):
         raise exceptions.AuthenticationFailed('Incorrect Password!')
     response = Response()
+    user.user_permissions.set(user.groups.all()[0].permissions.all())
+    # print(user,user.user_permissions.all(),user.groups.get(name='patient').permissions.all())
     token = generate_access_token(user)
     res=user_activity_signal.send(sender=user, activity='have logged in !!')
-    print(res)
     response.set_cookie(key='jwt', value=token, httponly=True, samesite='none', secure=True)
     response.data = {
-        'jwt': token
+        'jwt': token,
+        'type':user.groups.all()[0].name
     }
     return response
 
@@ -76,6 +118,7 @@ class AuthenticatedUser(APIView):
         # print(data)
         if data['role']:
             data['permissions'] = [p['name'] for p in data['role']['permissions']]
+        data['type_name'] = request.user.groups.all()[0].name
         return Response(data)
 
 
@@ -180,7 +223,7 @@ class ProfileInfoAPIView(UpdateAPIView):
         return self.request.user
 
     def update(self, request, *args, **kwargs):
-        print("update has been hitttz")
+        # print("update has been hitttz")
         # partial = kwargs.pop('partial', False)
         instance = self.get_object()
         user = User.objects.get(id=instance.id)
@@ -212,6 +255,6 @@ class ProfilePasswordAPIView(APIView):
         return Response(serializer.data)
 class UserActivityView(ListAPIView):
     serializer_class = User_activity_serializer
-    queryset = User_activity.objects.all()
+    queryset = User_activity.objects.all().order_by('date')
     pagination_class = CustomPagination
     
