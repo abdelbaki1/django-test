@@ -127,7 +127,7 @@ class genericroleview(GenericAPIView, PermissionRequiredMixin):
         else:
             print("no permission granted")
             raise PermissionDenied("good luck next time")
-    permission_required = ('change_role','add_role','delete_role')
+    # permission_required = ('change_role','add_role','delete_role')
 
     authentication_classes = [JWTAuthentication]
     serializer_class = RoleSerializer

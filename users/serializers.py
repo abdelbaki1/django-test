@@ -62,7 +62,7 @@ class UserSerializer(serializers.ModelSerializer):
             **validated_data,
             username=validated_data.get('last_name') + validated_data.get('first_name')
         )
-        print(instance.role, "********************")
+        
         if password is not None:
             instance.set_password(password)
         instance.save()
