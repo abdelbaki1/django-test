@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import User, Permission, Role, User_activity
+from .models import User, Role, User_activity
+from django.contrib.auth.models import Group,Permission
 
 
 class PermissionSerializer(serializers.ModelSerializer):
@@ -20,7 +21,7 @@ class RoleSerializer(serializers.ModelSerializer):
     permissions = PermissionRelatedField(many=True)
 
     class Meta:
-        model = Role
+        model = Group
         fields = '__all__'
 
     def create(self, validated_data):
@@ -42,11 +43,11 @@ class RoleRelatedField(serializers.RelatedField):
 
 class UserSerializer(serializers.ModelSerializer):
     # add required=false to allow setting it null in the input
-    role = RoleRelatedField(many=False, required=False, queryset=Role.objects.all())
+    groups = RoleRelatedField(many=True, required=False, queryset=Group.objects.all())
 
     class Meta:
         model = User
-        fields = ['id', 'first_name', 'last_name', 'email', 'password', 'role', 'user_image']
+        fields = ['id', 'first_name', 'last_name', 'email','groups', 'password','user_image']
         extra_kwargs = {
             # prevent password from been sent back
             'password': {'write_only': True}
@@ -56,9 +57,9 @@ class UserSerializer(serializers.ModelSerializer):
         print(validated_data)
         password = validated_data.pop('password', None)
 
-        roles = Role.objects.get(id=validated_data.get('role_id', 3))
+        # roles = Role.objects.get(id=validated_data.get('role_id', 3))
         instance = self.Meta.model(
-            **validated_data, role=roles,
+            **validated_data,
             username=validated_data.get('last_name') + validated_data.get('first_name')
         )
         print(instance.role, "********************")
@@ -71,8 +72,7 @@ class UserSerializer(serializers.ModelSerializer):
     #     """Convert `username` to lowercase."""
     #     server_url="http://localhost:8000"
     #     ret = super().to_representation(instance)
-    #     if(ret.get('user_image')):
-    #         ret['user_image'] = str(server_url + ret['user_image'])
+    #     ret['type'] = 
     #     return ret
 class User_activity_serializer(serializers.ModelSerializer):
     class Meta:

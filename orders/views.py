@@ -118,5 +118,5 @@ class ChartAPIView(APIView):
             for result in row]
 
         return Response({
-            'data': data
+            'data': data 
         })

@@ -5,6 +5,8 @@ from rest_framework.response import Response
 from rest_framework.generics import RetrieveAPIView, GenericAPIView, UpdateAPIView, CreateAPIView
 from rest_framework.generics import DestroyAPIView, RetrieveUpdateDestroyAPIView, ListAPIView
 from rest_framework.views import APIView
+from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.core.exceptions import PermissionDenied
 from testproject.pagination import CustomPagination
 from .auth import generate_access_token, JWTAuthentication
 from .models import User, Permission, Role, token, User_activity
@@ -13,56 +15,23 @@ from .auth import JWTAuthentication
 from django.contrib.auth.models import Group,Permission
 from .serializers import UserSerializer, PermissionSerializer, RoleSerializer,User_activity_serializer
 
-def get_permission(model_name,perm):
-    codename :str = perm+'_'+model_name
-    # print("6555555550",codename.lower())
-    return Permission.objects.get(codename=codename.lower())
 
-def __get_group(name_group:str,perms:dict):
-    admin_group,Created=Group.objects.get_or_create(name='Admin')
-    if Created:
-        admin_group.permissions.set(Permission.objects.all())
-    group_obj,created=Group.objects.get_or_create(name=name_group)
-    if created:
-        for app_name,app_models in perms.items():
-            for model_name,permissions in app_models.items():
-                for permission in permissions:
-                    # print(app_name, model_name, permission)
-                    group_obj.permissions.add(get_permission(model_name, permission))
-    group_obj.save()
-    return group_obj
 
 @api_view(['POST'])
 def register(request):
-    patient_permission_dict={
-            'products':
-                {'Product':['change','add','view','delete']},
-            'orders':
-                {'OrderItem':['change','add','view','delete']},
-        }
-    docter_permission_dict = {
-            'products':
-                {'Product':['view']},
-            'orders':
-                {'OrderItem':['view']},
-        }
     data = request.data
     if data['password'] != data['password_confirm']:
         raise exceptions.APIException('Passwords do not match!')
 
     serializer = UserSerializer(data=data)
     serializer.is_valid(raise_exception=True)
-    group_name :str = request.data.get('group_name')
-    if group_name.lower() =='patient':
-        group=__get_group(group_name,patient_permission_dict)
-    if group_name.lower() =='doctor':
-        group=__get_group(group_name,docter_permission_dict)
-
-    user_instance=serializer.save()
-    user_instance.groups.add(group)
+    group_name : str = request.data.get('group_name')
+    group_instance = Group.objects.get(name=group_name.lower())
+    user_instance  = serializer.save()
+    user_instance.groups.add(group_instance)
     user_activity_signal.send(sender=user_instance,activity=' just registered')
     user_instance.save()
-    print(user_instance.groups)
+    # print(user_instance.groups)
     return Response(serializer.data)
 
 
@@ -116,8 +85,8 @@ class AuthenticatedUser(APIView):
     def get(self, request):
         data = UserSerializer(request.user).data
         # print(data)
-        if data['role']:
-            data['permissions'] = [p['name'] for p in data['role']['permissions']]
+        # if data['role']:
+        #     data['permissions'] = [p['name'] for p in data['role']['permissions']]
         data['type_name'] = request.user.groups.all()[0].name
         return Response(data)
 
@@ -132,13 +101,37 @@ class PermissionAPIView(ListAPIView):
     serializer_class = PermissionSerializer
 
 
-class genericroleview(GenericAPIView):
+class genericroleview(GenericAPIView, PermissionRequiredMixin):
     '''
     generic api config for the role model
     '''
+    model = 'Role'
+    def get_permission_required(self):
+        if self.request.method == 'GET':
+            return ['view_'+ self.model.lower()]
+        if self.request.method == 'POST':
+            return ['add_'+ self.model.lower()]
+        if self.request.method == 'DELETE':
+            return ['delete_'+ self.model.lower()]
+        if self.request.method == 'PUT':
+            return ['change_'+ self.model.lower()]
+
+    def has_permission(self):
+        return all(
+            self.request.user.user_permissions.filter(codename=i).exists() for i in self.get_permission_required()
+            )
+    def get_object(self):
+        if(self.has_permission()):
+            print("user has permission")
+            return super().get_object()
+        else:
+            print("no permission granted")
+            raise PermissionDenied("good luck next time")
+    permission_required = ('change_role','add_role','delete_role')
+
     authentication_classes = [JWTAuthentication]
     serializer_class = RoleSerializer
-    queryset = Role.objects.all()
+    queryset = Group.objects.all().order_by('name')
 
 
 class listroleview(genericroleview, ListAPIView):
@@ -153,14 +146,18 @@ class RoleViewSet(genericroleview, RetrieveUpdateDestroyAPIView, CreateAPIView):
     '''return a role,create,update,delete'''
 
     permission_classes = [IsAuthenticated]
-    permission_object = 'roles'
     lookup_field = "id"
     lookup_url_kwarg = "pk"
+    permission_required = ('change_role','delete_role','add_role')
 
 
     def post(self, request, *args, **kwargs):
         user_activity_signal.send(sender=request.user, activity='have created a role')
-        return self.create(request, *args, **kwargs)
+        if(self.has_permission()):
+            # print("******",request.user.user_permissions.all())
+            return self.create(request, *args, **kwargs)
+        else :
+            raise PermissionDenied
 
     def put(self, request, *args, **kwargs):
         user_activity_signal.send(sender=request.user, activity='have updated a role')
@@ -171,7 +168,28 @@ class RoleViewSet(genericroleview, RetrieveUpdateDestroyAPIView, CreateAPIView):
         return self.destroy(request, *args, **kwargs)
 
 
-class UserGenericAPIView(GenericAPIView):
+class UserGenericAPIView(GenericAPIView,PermissionRequiredMixin):
+    model = 'User'
+    def get_permission_required(self):
+        if self.request.method == 'GET':
+            return ['view_'+ self.model.lower()]
+        if self.request.method == 'POST':
+            return ['add_'+ self.model.lower()]
+        if self.request.method == 'DELETE':
+            return ['delete_'+ self.model.lower()]
+        if self.request.method == 'PUT':
+            return ['change_'+ self.model.lower()]
+    def has_permission(self):
+        return all(
+            self.request.user.user_permissions.filter(codename=i).exists() for i in self.get_permission_required()
+            )
+    def get_object(self):
+        if(self.has_permission()):
+            print("user has permission")
+            return super().get_object()
+        else:
+            print("no permission granted")
+            raise PermissionDenied("good luck next time")
     authentication_classes = [JWTAuthentication]
     queryset = User.objects.all()
     serializer_class = UserSerializer
@@ -181,14 +199,24 @@ class UserlistAPI(UserGenericAPIView, ListAPIView):
     '''
     return a list of all users
     '''
+    permission_required = ('view_user','add_user')
     permission_classes = [IsAuthenticated]
     pagination_class = CustomPagination
 
 
 class UserAPIView(UserGenericAPIView, RetrieveAPIView, UpdateAPIView, DestroyAPIView, CreateAPIView):
     '''retrieve ,update,delete create a user'''
+    def post(self, request, *args, **kwargs):
+        
+        user_activity_signal.send(sender=request.user, activity='have created a user')
+        if(self.has_permission()):
+            return self.create(request, *args, **kwargs)
+        else :
+            raise PermissionDenied
+    
     permission_classes = [IsAuthenticated]
-    permission_object = 'users'
+    permission_required = ('change_user','add_user',)
+    
     lookup_field = "id"
     lookup_url_kwarg = 'pk'
     
@@ -204,8 +232,8 @@ class UserAPIView(UserGenericAPIView, RetrieveAPIView, UpdateAPIView, DestroyAPI
         user.email = request.data.get('email')
         user.first_name = request.data.get('first_name')
         user.last_name = request.data.get('last_name')
-        roles = Role.objects.get(id=request.data.get('role_id'))
-        user.role = roles
+        group = Group.objects.get(id=request.data.get('role_id'))
+        user.groups.set([group])
         user.save()
         return Response(UserSerializer(user).data)
 
@@ -223,7 +251,7 @@ class ProfileInfoAPIView(UpdateAPIView):
         return self.request.user
 
     def update(self, request, *args, **kwargs):
-        # print("update has been hitttz")
+        print("update has been hitttz")
         # partial = kwargs.pop('partial', False)
         instance = self.get_object()
         user = User.objects.get(id=instance.id)
@@ -231,7 +259,6 @@ class ProfileInfoAPIView(UpdateAPIView):
         user.first_name = request.data.get('first_name')
         user.last_name = request.data.get('last_name')
         user.user_image=request.data.get('user_image')
-        
         user.save(update_fields=request.data.keys())
         user_activity_signal.send(user,activity='have updated his profile')
         return Response(UserSerializer(user).data)

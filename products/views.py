@@ -19,16 +19,27 @@ from django.contrib.auth.models import Permission
 
 
 class GenericProductView(GenericAPIView,PermissionRequiredMixin):
+    model :str = "Product"
     authentication_classes = [JWTAuthentication]
     # permission_classes = [IsAuthenticated]
-    queryset = Product.objects.all()
+    queryset = Product.objects.all().order_by('title')
     serializer_class = ProductSerializer
+    def get_permission_required(self):
+        if self.request.method == 'GET':
+            return ['view_'+ self.model.lower()]
+        if self.request.method == 'POST':
+            return ['add_'+ self.model.lower()]
+        if self.request.method == 'DELETE':
+            return ['delete_'+ self.model.lower()]
+        if self.request.method == 'PUT':
+            return ['change_'+ self.model.lower()]
 
     def has_permission(self):
         return all(
             self.request.user.user_permissions.filter(codename=i).exists() for i in self.get_permission_required()
             )
     def get_object(self):
+        print(self.get_permission_required(),self.request.user.user_permissions.all())
         if(self.has_permission()):
             print("user has permission")
             return super().get_object()
@@ -43,6 +54,7 @@ class getallproduct(GenericProductView, ListModelMixin):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
+        print('view_'+ self.get_queryset().__class__.__name__)
         return self.list(request,
                          *args,
                          **kwargs)
