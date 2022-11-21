@@ -11,6 +11,7 @@ from rest_framework.mixins import CreateModelMixin
 from rest_framework.mixins import RetrieveModelMixin
 from rest_framework.mixins import UpdateModelMixin
 from rest_framework.mixins import DestroyModelMixin
+from rest_framework.filters import SearchFilter
 from django.core.exceptions import PermissionDenied
 from users.Signals import user_activity_signal
 from django.contrib.auth.mixins import PermissionRequiredMixin
@@ -52,6 +53,8 @@ class getallproduct(GenericProductView, ListModelMixin):
     permission_required = ('view_product')
     pagination_class = CustomPagination
     permission_classes = [IsAuthenticated]
+    search_fields = ['title']
+    filter_backends = [SearchFilter]
 
     def get(self, request, *args, **kwargs):
         print('view_'+ self.get_queryset().__class__.__name__)

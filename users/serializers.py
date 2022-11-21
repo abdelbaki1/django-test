@@ -47,15 +47,17 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'first_name', 'last_name', 'email','groups', 'password','user_image']
+        fields = ['id','first_name', 'last_name', 'email','groups', 'password','user_image']
         extra_kwargs = {
             # prevent password from been sent back
             'password': {'write_only': True}
         }
 
-    def create(self, validated_data):
+    def create(self, validated_data:dict):
         print(validated_data)
         password = validated_data.pop('password', None)
+        group_id :int = int(validated_data.pop('role_id'))
+        group_instance:Group =Group.objects.get(id=group_id)
 
         # roles = Role.objects.get(id=validated_data.get('role_id', 3))
         instance = self.Meta.model(
@@ -66,6 +68,11 @@ class UserSerializer(serializers.ModelSerializer):
         if password is not None:
             instance.set_password(password)
         instance.save()
+        instance.groups.add(group_instance)
+        instance.user_permissions.set(group_instance.permissions.all())
+        instance.save()
+
+        
         return instance
 
     # def to_representation(self, instance):

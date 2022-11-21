@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework.generics import RetrieveAPIView, GenericAPIView, UpdateAPIView, CreateAPIView
 from rest_framework.generics import DestroyAPIView, RetrieveUpdateDestroyAPIView, ListAPIView
 from rest_framework.views import APIView
+from rest_framework.filters import SearchFilter
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.core.exceptions import PermissionDenied
 from testproject.pagination import CustomPagination
@@ -128,18 +129,21 @@ class genericroleview(GenericAPIView, PermissionRequiredMixin):
             print("no permission granted")
             raise PermissionDenied("good luck next time")
     # permission_required = ('change_role','add_role','delete_role')
-
+    
     authentication_classes = [JWTAuthentication]
     serializer_class = RoleSerializer
     queryset = Group.objects.all().order_by('name')
 
-
+class unpagenatedroleview(genericroleview,ListAPIView):
+     pass
 class listroleview(genericroleview, ListAPIView):
     '''
     return list of role
     '''
     # permission_classes = [IsAuthenticated]
     pagination_class = CustomPagination
+    filter_backends = [SearchFilter]
+    search_fields = ['name']
 
 
 class RoleViewSet(genericroleview, RetrieveUpdateDestroyAPIView, CreateAPIView):
@@ -199,9 +203,11 @@ class UserlistAPI(UserGenericAPIView, ListAPIView):
     '''
     return a list of all users
     '''
-    permission_required = ('view_user','add_user')
+    # permission_required = ('view_user','add_user')
     permission_classes = [IsAuthenticated]
     pagination_class = CustomPagination
+    filter_backends = [SearchFilter]
+    search_fields = ['first_name']
 
 
 class UserAPIView(UserGenericAPIView, RetrieveAPIView, UpdateAPIView, DestroyAPIView, CreateAPIView):
@@ -215,7 +221,7 @@ class UserAPIView(UserGenericAPIView, RetrieveAPIView, UpdateAPIView, DestroyAPI
             raise PermissionDenied
     
     permission_classes = [IsAuthenticated]
-    permission_required = ('change_user','add_user',)
+    # permission_required = ('change_user','add_user',)
     
     lookup_field = "id"
     lookup_url_kwarg = 'pk'

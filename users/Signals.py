@@ -1,7 +1,8 @@
 from django.dispatch import Signal
-from .models import User_activity
-from  django.db.models.signals import post_migrate
+from .models import User_activity,User
+from django.db.models.signals import post_migrate,pre_delete
 from django.contrib.auth.models import Group,Permission
+from django.core.exceptions import ValidationError
 
 
 # ************defining signals*********************
@@ -45,21 +46,32 @@ def __get_group(name_group:str,perms:dict):
 
 
 # ********************receivers function*********************
-def print_user_connected(sender,activity,**kwargs):
+def add_user_activity(sender,activity,**kwargs):
     user_instance = User_activity.objects.create(user=sender)
     user_instance.activity=activity
     user_instance.save()
-    # print(user_instance.date.ctime())
+
 def create_instance(sender,**kwargs):
     print('postmigrations detected!!!!!')
     group_names=['doctor','patient']
     __get_group('doctor', docter_permission_dict)
     __get_group('patient', patient_permission_dict)
 
-
-
-
+def pre_delete_group_check_user_relation(sender,instance,**kwargs):
+    """affect user_permission of the user's group"""
+    # print(sender,instance,sender.__name__.lower()=="group")   
+    if(sender.__name__.lower()=="group"):
+        group_instance : Group = instance;
+        if(group_instance.user_set.count()!=0):
+            raise ValidationError(f"{group_instance.name} contains users !")
+# def add_admin_group_superuser(sender,instance,**kwargs):
+#     """add admin group to the superuser created"""
+#     if(sender.__name__.lower() == 'user'):
+#         user:User = instance;
+#         if(user.is_superuser)
+    
 
 # ******************************Signals Connections*********************
-user_activity_signal.connect(print_user_connected,weak=False)
+user_activity_signal.connect(add_user_activity,weak=False)
 post_migrate.connect(create_instance)
+pre_delete.connect(pre_delete_group_check_user_relation)
