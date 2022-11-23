@@ -85,21 +85,24 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'testproject.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': os.environ.get('db_engine', ''),
-        'NAME': os.environ.get('db_name', ''),
-        'USER': os.environ.get('db_user', ''),
-        'PASSWORD': os.environ.get('db_password', ''),
-        'HOST': os.environ.get('db_host', ''),
-        'PORT': os.environ.get('db_port', ''),
-        'OPTIONS': {'charset': 'utf8mb4'},
-
+    'default' : {
+        'ENGINE' : 'django.db.backends.sqlite3',
+        'NAME' :'baki'
     }
+    # 'default': {
+    #     'ENGINE': os.environ.get('db_engine', ''),
+    #     'NAME': os.environ.get('db_name', ''),
+    #     'USER': os.environ.get('db_user', ''),
+    #     'PASSWORD': os.environ.get('db_password', ''),
+    #     'HOST': os.environ.get('db_host', ''),
+    #     'PORT': os.environ.get('db_port', ''),
+    #     'OPTIONS': {'charset': 'utf8mb4'},
+
+    # }
 }
 
 

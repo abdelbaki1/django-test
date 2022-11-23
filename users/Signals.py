@@ -31,6 +31,7 @@ def get_permission(model_name,perm):
     return Permission.objects.get(codename=codename.lower())
 
 def __get_group(name_group:str,perms:dict):
+    print(name_group,perms)
     admin_group,Created=Group.objects.get_or_create(name='admin')
     if Created:
         admin_group.permissions.set(Permission.objects.all())
