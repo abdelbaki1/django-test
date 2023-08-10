@@ -1,7 +1,5 @@
 pipeline{
-    agent{
-        label "linux"
-    }
+    agent any
     stages{
         stage("build the containers from docker-compose file"){
             steps{
