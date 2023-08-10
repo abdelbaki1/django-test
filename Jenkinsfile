@@ -26,7 +26,7 @@ pipeline{
             script {
             def containerId = sh(script: "docker-compose ps -q sql_container", returnStdout: true).trim()
             sh "docker exec ${containerId} tar -cvzf /var/lib/mysql/backup.tar.gz /var/lib/mysql"
-            sh "docker mv -vp ${containerId}:/var/lib/mysql/data/backup.tar.gz /var/jenkins_home/backups/$(date+%Y/%m/%d)"
+            sh "docker cp ${containerId}:/var/lib/mysql/data/backup.tar.gz /var/jenkins_home/backups/$(date+%Y/%m/%d)"
         }
     }
 }
