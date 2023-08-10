@@ -19,6 +19,7 @@ services :
     
 
 
+
 #setting the identity of the containner
   django_container:
   #  container_name: Dj_containner
