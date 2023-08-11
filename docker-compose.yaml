@@ -2,20 +2,22 @@
 version: '3.8'
 #initializing containners
 services :
-  sql_containner:
+  sql_container:
+   
    image: mysql:5.7.22
+   container_name : sql
    restart : always
   
-   environment :
-      - MYSQL_DATABASE='${db_name}'
-      - MYSQL_USER='${db_user}'
-      - MYSQL_PASSWORD='${db_password}'
-      - MYSQL_ROOT_PASSWORD='${db_password}'
+  #  environment :
+      # - MYSQL_DATABASE='${db_name}'
+      # - MYSQL_USER='${db_user}'
+      # - MYSQL_PASSWORD='${db_password}'
+      # - MYSQL_ROOT_PASSWORD='${db_password}'
    volumes:
      - .dbdata:/var/lib/mysql
      
    ports:
-    - "3305:${db_port}"
+    - 3306:3306
     
 
 
@@ -34,5 +36,5 @@ services :
     #speciffing the location of files for docker
      - .:/app
    depends_on:
-     - sql_containner
+     - sql_container
 

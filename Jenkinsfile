@@ -4,7 +4,7 @@ pipeline{
         stage("build the containers from docker-compose file"){
             steps{
  
-                sh 'docker-compose build -d sql_containner '
+                sh 'docker-compose build sql_containner '
             }
             post{
                
@@ -15,7 +15,7 @@ pipeline{
         }
         stage("run the containers"){
             steps{
-                sh "docker-compose start -d sql_containner"
+                sh "docker-compose run sql_containner"
             }
 
         }
