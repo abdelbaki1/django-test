@@ -1,6 +1,6 @@
 pipeline{
     agent any
-    stages{
+    stages{   
         stage("build the containers from docker-compose file"){
             steps{
  
